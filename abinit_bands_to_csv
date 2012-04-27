@@ -1,0 +1,72 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+'''
+Created on 27-04-2012 18:43:25
+@author: Maciej Chudak
+
+Output data order:
+path length, kx, ky, kz, one or more band energy value 
+'''
+import argparse, re, sys, csv
+from math import sqrt
+
+parser=argparse.ArgumentParser(description='Extract band structure data from '+
+                               'Abinit .out file as convenient .csv. Outputs '+
+                               'to stdout.')
+parser.add_argument('input_file', type=str, nargs=1,
+                   help='path of the .out file')
+args=parser.parse_args()
+
+# raw strings as regexps
+regexps={"coords":r"kpt= +([\-0-9\.]+) +([\-0-9\.]+) +([\-0-9\.]+)",
+         "value" :r"([\-0-9\.]+)"}
+
+previous_line_contained_coords=False
+path_length=0.0
+
+out_stream=csv.writer(sys.stdout, delimiter=' ', escapechar='\\',
+                      quoting=csv.QUOTE_NONE)
+out_line=[]
+
+k=[0.0, 0.0, 0.0]
+k_old=[0.0, 0.0, 0.0]
+
+with open(args.input_file[0], "r") as inf:
+    for line in inf:
+
+        if previous_line_contained_coords:
+            for match in re.findall(regexps['value'], line):
+                out_line.append(match)
+            out_stream.writerow(out_line)
+            out_line=[]
+            previous_line_contained_coords=False
+
+        else:
+            coords=re.search(regexps['coords'], line)
+            if coords:
+                
+                out_line.append(path_length)
+
+                step_squared=0.0
+                for i in range(3):
+                    k[i]=float(coords.groups()[i])
+                    out_line.append(k[i])
+                    step_squared+=(k[i]-k_old[i])**2
+
+                path_length+=sqrt(step_squared)
+
+                k_old=list(k)
+                previous_line_contained_coords=True
+
+
+
+
+
+
+
+
+
+
+
+
+

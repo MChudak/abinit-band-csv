@@ -1,0 +1,14 @@
+!) - important thing to do (severe bug, important feature),
++) - small feature,
+++) - big feature,
+ -> - additional ideas / features basing on the previous one.
+
+TO DO:
+
+!) There are many kpt datasets in an .out file - program should pick the best (longest?), or maybe ask the user which to take.
+
++) Delimiter - customisable.
+
+++) Another script to generate basic gnuplot *scripts*.
+ -> With recognising of high symmetry points and auto-labelling.
+ -> Maybe someone can't use unicode? Should the script support no-unicode mode?
