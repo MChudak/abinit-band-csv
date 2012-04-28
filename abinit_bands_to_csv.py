@@ -7,7 +7,7 @@ Created on 27-04-2012 18:43:25
 Extracts band structure data from an Abinit .out file and writes it out
 in csv format to stdout.  
 Output data order:
-path length, kx, ky, kz, one or more band energy value
+path length, kx, ky, kz, one or more band energy values
 '''
 import re
 
