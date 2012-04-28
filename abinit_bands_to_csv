@@ -18,48 +18,71 @@ parser.add_argument('input_file', type=str, nargs=1,
 args=parser.parse_args()
 
 # raw strings as regexps
-regexps={"coords":r"kpt= +([\-0-9\.]+) +([\-0-9\.]+) +([\-0-9\.]+)",
+regexps={"header":r"Eigenvalues \( *(\w+) *\) for nkpt= *([0-9]+) *k points:",
+         "coords":r"kpt= +([\-0-9\.]+) +([\-0-9\.]+) +([\-0-9\.]+)",
          "value" :r"([\-0-9\.]+)"}
 
-previous_line_contained_coords=False
-path_length=0.0
 
-out_stream=csv.writer(sys.stdout, delimiter=' ', escapechar='\\',
-                      quoting=csv.QUOTE_NONE)
-out_line=[]
+def find_datasets(file):
+    datasets=[]
+    data_lines_ahead=0
+    for line in file:
+        if data_lines_ahead==0:     # if not in a data block:
+            header=re.search(regexps["header"], line)
+            if header:
+                datasets.append(list(header.groups()))
+                datasets[-1].append(list())
+                # int()*2 because there are 2 lines per k point:
+                data_lines_ahead=int(header.groups()[1])*2
+        else:                       # if in a data block:
+            datasets[-1][2].append(line)
+            data_lines_ahead-=1
+    return datasets
 
-k=[0.0, 0.0, 0.0]
-k_old=[0.0, 0.0, 0.0]
 
-with open(args.input_file[0], "r") as inf:
-    for line in inf:
+def convert_to_csv(dataset, ostream, name=None):
+    # dataset should be an object returned by the "find_datasets" function,
+    # ostream should be a csv.writer object
+    ostream.writerow([
+" Band structure: file generated from Abinit "+name+" file. "])
+    ostream.writerow([
+" Eigenvalues ("+dataset[0]+") for nkpt= "+dataset[1]+" k points: "])
+    
+    path_length=0.0
+    out_line=[]
+    k=[0.0, 0.0, 0.0]
+    k_old=[0.0, 0.0, 0.0]
 
-        if previous_line_contained_coords:
+    for line in dataset[2]:
+        coords=re.search(regexps['coords'], line)
+        
+        if coords:
+            out_line.append(path_length)
+            step_squared=0.0
+            
+            for i in range(3):
+                k[i]=float(coords.groups()[i])
+                out_line.append(k[i])
+                step_squared+=(k[i]-k_old[i])**2
+            
+            path_length+=sqrt(step_squared)
+            k_old=list(k)
+        
+        else:
             for match in re.findall(regexps['value'], line):
                 out_line.append(match)
-            out_stream.writerow(out_line)
+            ostream.writerow(out_line)
             out_line=[]
-            previous_line_contained_coords=False
-
-        else:
-            coords=re.search(regexps['coords'], line)
-            if coords:
-                
-                out_line.append(path_length)
-
-                step_squared=0.0
-                for i in range(3):
-                    k[i]=float(coords.groups()[i])
-                    out_line.append(k[i])
-                    step_squared+=(k[i]-k_old[i])**2
-
-                path_length+=sqrt(step_squared)
-
-                k_old=list(k)
-                previous_line_contained_coords=True
 
 
+if __name__=="__main__":
+    with open(args.input_file[0], "r") as inf:
+        datasets=find_datasets(inf)
 
+    ostream=csv.writer(sys.stdout, delimiter=' ', escapechar='\\',
+                      quoting=csv.QUOTE_MINIMAL, quotechar='#')
+
+    convert_to_csv(datasets[-1], ostream, args.input_file[0])
 
 
 
