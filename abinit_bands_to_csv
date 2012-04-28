@@ -65,27 +65,33 @@ def convert_to_csv(dataset, ostream, name=None):
         - "dataset" should be returned by the "find_datasets" function,
         - "ostream" should be a csv.writer object.
     '''
+    # write initial descriptive lines
     ostream.writerow([
 " Band structure: file generated from Abinit "+name+" file. "])
     ostream.writerow([
 " Eigenvalues ("+dataset[0]+") for nkpt= "+dataset[1]+" k points: "])
 
-    path_length=0.0
-    out_line=[]
-    k=[0.0, 0.0, 0.0]
-    k_old=None
+    # helper variables
+    path_length=0.0     # total length of path in k-space
+    out_line=[]         # temporal container for the next row to be written
+    k=[0.0, 0.0, 0.0]   # value of current k, to compute the path_length
+    k_old=None          # value of last k, also to compute the path_length
 
+    # for each line of the extracted dataset
     for line in dataset[2]:
         coords=re.search(regexps['coords'], line)
 
+        # if the processed line contains coordinates in k-space
         if coords:
-            step_squared=0.0
+            step_squared=0.0    # sum of squares of step components
 
+            # initialise k_old variable (occurs once)
             if k_old is None:
                 k_old=[0.0, 0.0, 0.0]
                 for i in range(3):
                     k_old[i]=float(coords.groups()[i])
 
+            # read current coordinates
             for i in range(3):
                 k[i]=float(coords.groups()[i])
                 step_squared+=(k[i]-k_old[i])**2
@@ -93,10 +99,12 @@ def convert_to_csv(dataset, ostream, name=None):
             path_length+=sqrt(step_squared)
             k_old=list(k)
 
+            # write out to the temporal row container
             out_line.append(path_length)
             for i in range(3):
                 out_line.append(k[i])
 
+        # if not, then it should contain the energy eigenvalues
         else:
             for match in re.findall(regexps['value'], line):
                 out_line.append(match)
