@@ -5,9 +5,7 @@
 
 TO DO:
 
-!) There are many kpt datasets in an .out file - program should pick the best (longest?), or maybe ask the user which to take.
-
-+) Delimiter - customisable.
++) Delimiter and others - customisable output format.
 
 ++) Another script to generate basic gnuplot *scripts*.
  -> With recognising of high symmetry points and auto-labelling.
