@@ -7,26 +7,7 @@ Created on 27-04-2012 18:43:25
 Output data order:
 path length, kx, ky, kz, one or more band energy value 
 '''
-import argparse, re, sys, csv
-from math import sqrt
-
-# command line arguments parsing
-parser=argparse.ArgumentParser(description='Extract band structure data from '+
-                               'Abinit .out file as convenient .csv. Outputs '+
-                               'to stdout.')
-parser.add_argument('input_file', type=str, nargs=1,
-                    help='path of the .out file')
-parser.add_argument('-c', type=str, nargs=1, metavar="choice", default="b",
-help='''method of choosing the dataset to process, possible values are:\n
-b - biggest (most k-points, last biggest is used in the case of a draw),\n
-l - last dataset (same as "-1"),\n
-any positive integer - dataset of this number will be used, 0 is the first\
-encountered in the file
-any negative integer - dataset of this number, counting from the end, will \
-be used: -1 is last, -2 previous, etc.
-Default is b.''')
-args=parser.parse_args()
-
+import re
 
 # raw ('r') strings as regular expressions
 regexps={"header":r"Eigenvalues \( *(\w+) *\) for nkpt= *([0-9]+) *k points:",
@@ -58,6 +39,7 @@ def find_datasets(file):
 
 
 def convert_to_csv(dataset, ostream, name=None):
+    from math import sqrt
     '''
     Converts the "dataset" object to csv and writes to "ostream", mentions
     the original file "name" in the first line.
@@ -113,6 +95,24 @@ def convert_to_csv(dataset, ostream, name=None):
 
 
 if __name__=="__main__":
+    import argparse, sys, csv
+    
+    # command line arguments parsing
+    parser=argparse.ArgumentParser(description='Extract band structure data from '+
+                                   'Abinit .out file as convenient .csv. Outputs '+
+                                   'to stdout.')
+    parser.add_argument('input_file', type=str, nargs=1,
+                        help='path of the .out file')
+    parser.add_argument('-c', type=str, nargs=1, metavar="choice", default="b",
+    help='''method of choosing the dataset to process, possible values are:\n
+    b - biggest (most k-points, last biggest is used in the case of a draw),\n
+    l - last dataset (same as "-1"),\n
+    any positive integer - dataset of this number will be used, 0 is the first\
+    encountered in the file
+    any negative integer - dataset of this number, counting from the end, will \
+    be used: -1 is last, -2 previous, etc.
+    Default is b.''')
+    args=parser.parse_args()
 
     # find all the datasets
     with open(args.input_file[0], "r") as inf:
@@ -147,7 +147,6 @@ if __name__=="__main__":
     # initialise writing object
     ostream=csv.writer(sys.stdout, delimiter=' ', escapechar='\\',
                       quoting=csv.QUOTE_MINIMAL, quotechar='#')
-
 
     # convert and write out requested data
     convert_to_csv(datasets[requested_set], ostream, args.input_file[0])
