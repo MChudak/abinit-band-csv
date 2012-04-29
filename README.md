@@ -2,13 +2,13 @@
 
 Extract band structure data from abinit `.out` files and write to `stdout` in a universal `.csv` format.
 
-Scripts work with Python 3.2 (maybe also 2, I didn't test it), but Python3 interpreter might be named in many ways in your system. Try:
+All scripts work with Python 3 (tested with 3.2.3), but `abinit_bands_csv_to_gnuplot.py` doesn't work with Python 2 (tested with 2.7.3). Python3 interpreter might be named in many ways in your system. Try:
 
 `python [script_name]`
 
 `python3 [script_name]`
 
-`/usr/bin/env python3 [script_name]`
+`env python3 [script_name]`
 
 And ensure that python3 is installed in your system: look in `/usr/bin` for anything beginning with `python`, run `python -V` or finally try to install python3 using your package manager.
 
