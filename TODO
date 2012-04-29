@@ -5,8 +5,7 @@
 
 TO DO:
 
++) SC lattice.
++) BCC lattice.
 +) Delimiter and others - customisable output format.
-
-++) Another script to generate basic gnuplot *scripts*.
- -> With recognising of high symmetry points and auto-labelling.
- -> Maybe someone can't use unicode? Should the script support no-unicode mode?
++) More / better documentation.
