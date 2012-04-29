@@ -109,14 +109,12 @@ set xtics 0
 print("set xrange [0:"+str(path_len)+"]")
 print("set autoscale y\n")
 
-# find characteristic high symmetry (k_label) points
-i=1
+# find characteristic high symmetry (critical) points, and label them on the graph
 for line in lines[3:]:
     nums=re.findall(regexps['value'], line)[:4]
     k_label=label_k_point(tuple(map(lambda x:float(x), nums[1:4])), all_critical_k["FCC"])
     if k_label is not None:
-        print("set xtics add ('"+k_label+"' "+str(i)+")")
-    i+=1
+        print("set xtics add ('"+k_label+"' "+nums[0]+")")
 
 print('''
 plot    ''', end='')
