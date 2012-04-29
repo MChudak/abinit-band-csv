@@ -9,8 +9,8 @@ to be used before extracting data with abinit_bands_to_csv script.
 
 Might display more info in the future.
 '''
-from abinit_bands_to_csv import *
-import argparse, sys
+from abinit_bands_to_csv import find_datasets
+import argparse
 
 parser=argparse.ArgumentParser(description='Displays some info about band '+
 'structure data in an Abinit .out file, intended to be used before extracting '+
