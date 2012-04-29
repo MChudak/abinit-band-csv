@@ -13,7 +13,58 @@ Generated output is meant to be used as a template by users that know gnuplot's
 syntax. This script writes to stdout.
 '''
 import argparse, re
-from math import floor, ceil
+from itertools import permutations
+
+# most basic k_label k points
+basic_critical_k={
+    "FCC":{"Γ":{(0.0, 0.0, 0.0)},
+           "X":{(1/2, 1/2, 0.0)},
+           "L":{(1/2, 0.0, 0.0), (1/2, 1/2, 1/2)},
+           "K":{(3/4, 3/8, 3/8), (3/8, 0.0,-3/8)},
+           "U":{(5/8, 1/4, 1/4), (5/8, 3/8, 0.0), (3/8, 3/8,-1/2)},
+           "W":{(3/4, 1/2, 1/4), (1/2, 1/4,-1/4)}}}
+
+# generating all possible coordinates of the basic k_label k points
+all_critical_k=dict()
+# for every structure (SC, BCC, FCC, etc.)
+for structure in basic_critical_k:
+    all_critical_k[structure]=dict()
+    # for every k_label point ('G'. 'X', 'L', etc.)
+    for point in basic_critical_k[structure]:
+        all_critical_k[structure][point]=set()
+        # for each basic k_label k point coordinate 
+        for basic_k in basic_critical_k[structure][point]:
+            for k in permutations(basic_k):
+                all_critical_k[structure][point].add(tuple(k))
+                all_critical_k[structure][point].add(tuple(map(lambda x:-x, k)))
+
+
+def print_k_dict(k_dict):
+    # print possible points
+    for structure in sorted(k_dict):
+        print(structure+":")
+        for point in sorted(k_dict[structure]):
+            print("->  "+point+":")
+            i = 1
+            for k in sorted(k_dict[structure][point]):
+                print(" ",i,"\t",k)
+                i+=1
+
+
+def label_k_point(k_point, k_dict):
+        k=list()
+        # move all coords to the first Brillouin zone
+        for ki in k_point:
+            if round(ki)==ki: k.append(0.0)
+            else: k.append((ki+1)%2-1)
+        k=tuple(k)
+
+        for critical_k in k_dict:
+            if k in k_dict[critical_k]:
+                return critical_k # the point is k_label
+        
+        return None # only if the point is not k_label
+
 
 parser=argparse.ArgumentParser(description='''Generates a gnuplot script that \
 will use a csv file containing band structure data. Writes to stdout.''')
@@ -58,19 +109,14 @@ set xtics 0
 print("set xrange [0:"+str(path_len)+"]")
 print("set autoscale y\n")
 
-# find characteristic high symmetry (critical) points
+# find characteristic high symmetry (k_label) points
+i=1
 for line in lines[3:]:
     nums=re.findall(regexps['value'], line)[:4]
-    
-    # move all coords to the first Brillouin zone
-    for i in range(1,4):
-        nums[i] = float(nums[i])
-        if nums[i]>= 1.0: nums[i]-=floor(nums[i])
-        if nums[i]<=-1.0: nums[i]-= ceil(nums[i])
-    
-    # check if Gamma
-    if nums[1]==nums[2]==nums[3]==0.0:
-        print("set xtics add ('Γ' "+str(nums[0])+")")
+    k_label=label_k_point(tuple(map(lambda x:float(x), nums[1:4])), all_critical_k["FCC"])
+    if k_label is not None:
+        print("set xtics add ('"+k_label+"' "+str(i)+")")
+    i+=1
 
 print('''
 plot    ''', end='')
