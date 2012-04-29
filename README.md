@@ -1,7 +1,8 @@
-# Abinit band structure csv script kit
-
+# Script kit for manipulating band structure data from Abinit files 
+## Overview
 Extract band structure data from abinit `.out` files and write to `stdout` in a universal `.csv` format.
 
+## How to use them
 All scripts work with Python 3 (tested with 3.2.3), but `abinit_bands_csv_to_gnuplot.py` doesn't work with Python 2 (tested with 2.7.3). Python3 interpreter might be named in many ways in your system. Try:
 
 `python [script_name]`
@@ -12,7 +13,8 @@ All scripts work with Python 3 (tested with 3.2.3), but `abinit_bands_csv_to_gnu
 
 And ensure that python3 is installed in your system: look in `/usr/bin` for anything beginning with `python`, run `python -V` or finally try to install python3 using your package manager.
 
-## abinit_bands_to_csv.py
+## What can they do
+### abinit_bands_to_csv.py
 Extracts band structure data from an Abinit `.out` file. Typical usage:
 
 `python abinit_bands_info.py path/to/my/file.out > path/to/output/file.csv`
@@ -21,10 +23,10 @@ Since there might be many band structure datasets in one `.out` file, few option
 
 Run `python abinit_bands_to_csv.py --help` to see the possible options.
 
-## abinit_bands_info.py
+### abinit_bands_info.py
 Displays some info about the `.out` file.
 
-## abinit_bands_csv_to_gnuplot.py
+### abinit_bands_csv_to_gnuplot.py
 Looks into a generated `.csv` file and creates a gnuplot template, for easy graphing.
 
 Tries to recognise high symmetry points and label them automatically. This is an experimental and not well-tested feature, please carefully check the output before publishing any graphs in Nature. Works only for FCC right now.
